@@ -1,0 +1,27 @@
+import "fake-indexeddb/auto";
+import test from "node:test";
+import assert from "node:assert/strict";
+import { initialize, loadData, saveData } from "../db.js";
+import { backupJSON, restoreData } from "../core.js";
+test("IndexedDBは初期化・更新・再読み込み・全復元を行い、古いタブの上書きを拒否する", async () => {
+  const first = await initialize();
+  const again = await initialize();
+  assert.equal(first.groups[0].id, again.groups[0].id);
+  const stale = structuredClone(first);
+  const updated = structuredClone(first);
+  updated.groups[0].name = "家計のノート";
+  await saveData(updated, 0);
+  assert.equal((await loadData()).groups[0].name, "家計のノート");
+  stale.groups[0].name = "古いタブ";
+  await assert.rejects(saveData(stale, 0), /別のタブ/);
+  assert.equal((await loadData()).groups[0].name, "家計のノート");
+  const restored = restoreData(backupJSON(first));
+  await saveData(restored, 1);
+  const loaded = await loadData();
+  assert.equal(loaded.groups[0].name, first.groups[0].name);
+  assert.equal(loaded.settings[0].revision, 2);
+  const invalid = structuredClone(loaded);
+  invalid.groups = [];
+  await assert.rejects(saveData(invalid, 2));
+  assert.equal((await loadData()).groups.length, 2);
+});

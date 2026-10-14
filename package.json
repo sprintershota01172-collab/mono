@@ -1,0 +1,15 @@
+{
+  "name": "kotori-budget",
+  "version": "1.9.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node --check app.js && node --check preset.js && node --check visuals.js && node --check core.js && node --check db.js && node --check folio.js && node --check illustrations.js && node --check sw.js && node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "linkedom": "^0.18.13"
+  }
+}
